@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — The Written Word</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=EB+Garamond:ital,wght@0,400;1,400&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1208; --ink-light: #3d2e1a; --sepia: #7a5c38;
+    --gold: #b8860b; --gold-light: #d4a843;
+    --cream: #f5ede0; --parchment: #ede0cc; --warm-white: #faf6f0; --rule: #c9a96e;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--ink); color:var(--cream); font-family:'EB Garamond',Georgia,serif; font-size:17px; line-height:1.7; min-height:100vh; }
+
+  .screen { display:none; min-height:100vh; }
+  .screen.active { display:flex; flex-direction:column; }
+
+  /* LOGIN */
+  #screen-login { align-items:center; justify-content:center; padding:2rem; }
+  .login-box { width:100%; max-width:380px; border:1px solid rgba(184,134,11,0.3); padding:3rem; background:rgba(26,18,8,0.8); position:relative; }
+  .login-box::before { content:''; position:absolute; inset:6px; border:1px solid rgba(184,134,11,0.1); pointer-events:none; }
+  .login-logo { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:300; font-style:italic; color:var(--gold-light); text-align:center; margin-bottom:0.3rem; }
+  .login-sub { font-family:'Cinzel',serif; font-size:0.55rem; letter-spacing:0.3em; text-transform:uppercase; color:var(--sepia); text-align:center; margin-bottom:2.5rem; }
+  .login-error { color:#e07070; font-family:'Cinzel',serif; font-size:0.6rem; text-align:center; margin-top:1rem; min-height:1.2em; }
+
+  /* MAIN */
+  #screen-main { flex-direction:row; }
+  .sidebar { width:240px; min-height:100vh; background:rgba(0,0,0,0.3); border-right:1px solid rgba(201,169,110,0.15); display:flex; flex-direction:column; padding:2rem 1.5rem; flex-shrink:0; }
+  .sidebar-logo { font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:300; font-style:italic; color:var(--gold-light); margin-bottom:0.3rem; }
+  .sidebar-sub { font-family:'Cinzel',serif; font-size:0.5rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--sepia); margin-bottom:2.5rem; }
+  .sidebar-nav { list-style:none; margin-bottom:auto; }
+  .sidebar-nav li { margin-bottom:0.3rem; }
+  .sidebar-nav a { display:block; padding:0.5rem 0.75rem; font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--sepia); text-decoration:none; transition:color 0.2s, background 0.2s; border-left:2px solid transparent; }
+  .sidebar-nav a:hover, .sidebar-nav a.active { color:var(--gold-light); border-left-color:var(--gold); background:rgba(184,134,11,0.05); }
+  .sidebar-bottom { margin-top:2rem; padding-top:1.5rem; border-top:1px solid rgba(201,169,110,0.15); }
+  .sidebar-bottom a { display:block; font-family:'Cinzel',serif; font-size:0.55rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--sepia); text-decoration:none; padding:0.4rem 0; opacity:0.5; transition:opacity 0.2s; }
+  .sidebar-bottom a:hover { opacity:1; color:var(--gold); }
+
+  .main-content { flex:1; padding:3rem; overflow-y:auto; }
+  .page { display:none; }
+  .page.active { display:block; }
+  .page-title { font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:300; font-style:italic; color:var(--cream); margin-bottom:0.4rem; }
+  .page-desc { font-size:0.95rem; color:rgba(245,237,224,0.4); font-style:italic; margin-bottom:2.5rem; }
+
+  /* FORMS */
+  .form-group { margin-bottom:1.4rem; }
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+  .form-full { grid-column:1/-1; }
+  label { display:block; font-family:'Cinzel',serif; font-size:0.55rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--sepia); margin-bottom:0.5rem; }
+  input[type="text"], input[type="password"], input[type="url"], input[type="date"], select, textarea {
+    width:100%; padding:0.75rem 1rem; background:rgba(245,237,224,0.05); border:1px solid rgba(201,169,110,0.3);
+    color:var(--cream); font-family:'EB Garamond',serif; font-size:1rem; outline:none; transition:border-color 0.2s; appearance:none;
+  }
+  input:focus, select:focus, textarea:focus { border-color:var(--gold); background:rgba(245,237,224,0.07); }
+  select option { background:var(--ink); color:var(--cream); }
+  textarea { resize:vertical; min-height:220px; line-height:1.8; }
+  .hint { font-size:0.85rem; color:rgba(245,237,224,0.3); font-style:italic; margin-top:0.4rem; }
+
+  .btn { padding:0.85rem 1.5rem; font-family:'Cinzel',serif; font-size:0.65rem; letter-spacing:0.3em; text-transform:uppercase; border:none; cursor:pointer; transition:all 0.2s; }
+  .btn-primary { background:var(--gold); color:var(--ink); }
+  .btn-primary:hover { background:var(--gold-light); }
+  .btn-secondary { background:transparent; color:var(--sepia); border:1px solid rgba(201,169,110,0.3); }
+  .btn-secondary:hover { border-color:var(--gold); color:var(--gold); }
+  .btn-danger { background:transparent; color:#c45a5a; border:1px solid rgba(196,90,90,0.3); font-size:0.5rem; padding:0.4rem 0.8rem; letter-spacing:0.2em; }
+  .btn-danger:hover { background:rgba(196,90,90,0.1); border-color:#c45a5a; }
+
+  /* STATUS */
+  .status-bar { padding:1rem 1.5rem; font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.15em; margin-bottom:1.5rem; display:none; line-height:1.6; }
+  .status-bar.show { display:block; }
+  .status-bar.success { background:rgba(42,110,58,0.15); border-left:3px solid #4a9e5a; color:#7ec98a; }
+  .status-bar.error   { background:rgba(139,32,32,0.15); border-left:3px solid #c45a5a; color:#e08080; }
+  .status-bar.info    { background:rgba(184,134,11,0.1); border-left:3px solid var(--gold); color:var(--gold-light); }
+
+  /* COPY STEP */
+  .copy-box { background:rgba(245,237,224,0.03); border:1px solid rgba(201,169,110,0.2); padding:1.5rem; margin-bottom:1.5rem; }
+  .copy-box-title { font-family:'Cinzel',serif; font-size:0.55rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--gold); margin-bottom:0.75rem; }
+  .copy-step { display:flex; align-items:flex-start; gap:1rem; margin-bottom:1rem; font-size:0.9rem; color:rgba(245,237,224,0.65); line-height:1.5; }
+  .copy-step-num { font-family:'Cinzel',serif; font-size:0.6rem; color:var(--gold); opacity:0.6; flex-shrink:0; margin-top:0.1rem; }
+  .copy-step a { color:var(--gold-light); }
+
+  .copy-area { width:100%; height:120px; background:rgba(0,0,0,0.3); border:1px solid rgba(201,169,110,0.2); color:rgba(245,237,224,0.5); font-family:monospace; font-size:0.75rem; padding:0.75rem; resize:none; outline:none; }
+
+  /* POSTS LIST */
+  .posts-list { display:flex; flex-direction:column; gap:1px; background:rgba(201,169,110,0.15); }
+  .post-item { background:var(--ink); padding:1.2rem 1.5rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; }
+  .post-item-info { flex:1; min-width:0; }
+  .post-item-title { font-family:'Cormorant Garamond',serif; font-size:1.05rem; color:var(--cream); margin-bottom:0.2rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .post-item-meta { font-family:'Cinzel',serif; font-size:0.5rem; letter-spacing:0.15em; color:var(--sepia); opacity:0.6; }
+  .post-item-tag { font-family:'Cinzel',serif; font-size:0.45rem; letter-spacing:0.2em; text-transform:uppercase; padding:0.2rem 0.6rem; border:1px solid currentColor; white-space:nowrap; }
+  .tag-poem{color:#9e6e94} .tag-academic{color:#4a8f8a} .tag-opinion{color:#b05a5a} .tag-essay{color:#5a7ab0} .tag-books{color:#7a9e4a} .tag-unclassified{color:#7a7a7a}
+
+  @media(max-width:768px){
+    #screen-main{flex-direction:column}
+    .sidebar{width:100%;min-height:auto;border-right:none;border-bottom:1px solid rgba(201,169,110,0.15)}
+    .main-content{padding:2rem 1.5rem}
+    .form-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="screen-login" class="screen active">
+  <div class="login-box">
+    <div class="login-logo">The Written Word</div>
+    <div class="login-sub">Admin Panel</div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="Enter your password" onkeydown="if(event.key==='Enter')attemptLogin()">
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="attemptLogin()">Enter</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="screen-main" class="screen">
+  <aside class="sidebar">
+    <div class="sidebar-logo">The Written Word</div>
+    <div class="sidebar-sub">Admin</div>
+    <ul class="sidebar-nav">
+      <li><a href="#" class="active" onclick="showPage('new-post',this)">✦ &nbsp;New Post</a></li>
+      <li><a href="#" onclick="showPage('all-posts',this)">≡ &nbsp;All Posts</a></li>
+      <li><a href="#" onclick="showPage('settings',this)">⚙ &nbsp;Settings</a></li>
+    </ul>
+    <div class="sidebar-bottom">
+      <a href="index.html" target="_blank">↗ View Site</a>
+      <a href="#" onclick="logout()">→ Log Out</a>
+    </div>
+  </aside>
+
+  <div class="main-content">
+
+    <!-- NEW POST -->
+    <div class="page active" id="page-new-post">
+      <h1 class="page-title">New Post</h1>
+      <p class="page-desc">Fill in the form and click "Generate & Copy". Then paste into GitHub in 3 clicks.</p>
+
+      <div id="publish-status" class="status-bar"></div>
+
+      <!-- STEP 1: FORM -->
+      <div id="form-section">
+        <div class="form-grid">
+          <div class="form-full form-group">
+            <label>Title</label>
+            <input type="text" id="post-title" placeholder="The title of your piece">
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="post-category">
+              <option value="opinion">Opinion</option>
+              <option value="books">On Books</option>
+              <option value="academic">Occasional Academia</option>
+              <option value="essay">Essay</option>
+              <option value="poem" selected>Poems</option>
+              <option value="unclassified">Unclassified</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="post-date">
+          </div>
+          <div class="form-group">
+            <label>Publication / Note <span style="opacity:0.4">(optional)</span></label>
+            <input type="text" id="post-publication" placeholder="e.g. Meanjin, Fall 2025">
+          </div>
+          <div class="form-group">
+            <label>Link to Original <span style="opacity:0.4">(optional)</span></label>
+            <input type="url" id="post-link" placeholder="https://...">
+          </div>
+          <div class="form-full form-group">
+            <label>Content</label>
+            <textarea id="post-content" placeholder="Paste or write your full piece here..."></textarea>
+            <p class="hint">For poems, line breaks are preserved exactly as you write them.</p>
+          </div>
+          <div class="form-full form-group">
+            <label>Excerpt <span style="opacity:0.4">(short teaser — leave blank to auto-generate)</span></label>
+            <textarea id="post-excerpt" style="min-height:80px" placeholder="A short teaser..."></textarea>
+          </div>
+          <div class="form-full">
+            <button class="btn btn-primary" onclick="generatePost()">✦ &nbsp;Generate & Copy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: PASTE INSTRUCTIONS -->
+      <div id="paste-section" style="display:none; margin-top:2rem;">
+        <div class="copy-box">
+          <div class="copy-box-title">✦ &nbsp; Now paste this into GitHub — 3 steps</div>
+          <div class="copy-step"><span class="copy-step-num">1.</span><span>Go to <a href="https://github.com/uneb-ben/Staying-Human/edit/main/posts.json" target="_blank">github.com/uneb-ben/Staying-Human/edit/main/posts.json</a></span></div>
+          <div class="copy-step"><span class="copy-step-num">2.</span><span>Select all the text in the editor (Ctrl+A or Cmd+A) and delete it. Then paste (Ctrl+V or Cmd+V).</span></div>
+          <div class="copy-step"><span class="copy-step-num">3.</span><span>Scroll down and click <strong style="color:var(--gold-light)">Commit changes</strong>. Your site updates in ~1 minute.</span></div>
+        </div>
+
+        <div class="form-group">
+          <label>Your updated posts.json — already copied to clipboard</label>
+          <textarea class="copy-area" id="json-output" readonly></textarea>
+        </div>
+
+        <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="copyAgain()">Copy Again</button>
+          <button class="btn btn-secondary" onclick="resetForm()">← Write Another</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALL POSTS -->
+    <div class="page" id="page-all-posts">
+      <h1 class="page-title">All Posts</h1>
+      <p class="page-desc">Your published writing. To delete a post, click Delete then follow the same copy-paste step.</p>
+      <div id="delete-status" class="status-bar"></div>
+      <div id="delete-paste" style="display:none; margin-bottom:2rem;">
+        <div class="copy-box">
+          <div class="copy-box-title">✦ &nbsp; Paste to confirm deletion</div>
+          <div class="copy-step"><span class="copy-step-num">1.</span><span>Go to <a href="https://github.com/uneb-ben/Staying-Human/edit/main/posts.json" target="_blank">github.com/uneb-ben/Staying-Human/edit/main/posts.json</a></span></div>
+          <div class="copy-step"><span class="copy-step-num">2.</span><span>Select all (Ctrl+A / Cmd+A), delete, paste (Ctrl+V / Cmd+V), then Commit changes.</span></div>
+        </div>
+        <div class="form-group">
+          <label>Updated posts.json (post removed)</label>
+          <textarea class="copy-area" id="delete-json-output" readonly></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="copyDeleteJson()">Copy Again</button>
+      </div>
+      <div class="posts-list" id="posts-list">
+        <div style="padding:2rem;text-align:center;color:var(--sepia);font-style:italic;">Loading from your saved posts...</div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <h1 class="page-title">Settings</h1>
+      <p class="page-desc">Change your admin password.</p>
+      <div id="password-status" class="status-bar"></div>
+      <div class="form-group">
+        <label>New Password</label>
+        <input type="password" id="new-password" placeholder="Enter new password">
+      </div>
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <input type="password" id="confirm-password" placeholder="Repeat new password">
+      </div>
+      <button class="btn btn-primary" style="max-width:220px" onclick="changePassword()">Update Password</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const DEFAULT_PASSWORD = 'writemore2025';
+
+  // ── SEED DATA — your existing posts ──
+  const SEED_POSTS = [
+    {
+      id: "1740528000000",
+      title: "Drinking Late at Night After a Snowfall in Thimphu",
+      category: "poem",
+      content: "The moon looms dangerously close tonight\nlike a lighthouse on the November shore\ntoward which willows unleaf themselves\nseeking their innards.\nWe are at a bar deciding what it means to be still.\nTemple bells trill on & on, tapering out\nlike thoughts breaking down at the mind's edge.\nAs those involving origins. To say dirt comes\nfrom non-dirt, or not this, not that\nin a language of inward regress. Mind,\nlike electricity, seeks a terminus &, finding none,\nzeroes down. The bell ringer listened to the trill\nto the cease, & ceased himself. That's one\nway to home—reaching into yourself\nuntil the search leads to great foreign\ncities hurling at tremendous speed, cities\nwhere each inhabitant opens a door into\ninner cities. I know this street I can walk\nback blind. It enters, & only a part\nof it emerges out of a long mirror, & there,\nI've greeted the dead in a possible language\nas if they've moved houses one street\nover, outside the possibility of here & now,\ninto a long happy retirement.\nIn the afternoon, they come out into the patio\nto drink their cool tea inevitable as the other\nhalf of the half moon.",
+      excerpt: "The moon looms dangerously close tonight / like a lighthouse on the November shore / toward which willows unleaf themselves / seeking their innards.",
+      publication: "Meanjin, Fall 2025",
+      link: "https://meanjin.com.au/poetry/drinking-late-at-night-after-a-snowfall-in-thimphu/",
+      date: "2025-02-26",
+      featured: true
+    }
+  ];
+
+  const $ = id => document.getElementById(id);
+
+  function getPosts() {
+    try {
+      const stored = localStorage.getItem('tww_posts');
+      if (stored) return JSON.parse(stored);
+    } catch(e) {}
+    // first time — seed with existing post
+    localStorage.setItem('tww_posts', JSON.stringify(SEED_POSTS));
+    return SEED_POSTS;
+  }
+
+  function savePosts(posts) {
+    localStorage.setItem('tww_posts', JSON.stringify(posts));
+  }
+
+  function getPassword() {
+    return localStorage.getItem('tww_password') || DEFAULT_PASSWORD;
+  }
+
+  function showStatus(id, type, msg) {
+    const el = $(id);
+    el.className = `status-bar ${type} show`;
+    el.textContent = msg;
+    if (type === 'success') setTimeout(() => el.classList.remove('show'), 5000);
+  }
+
+  // ── LOGIN ──
+  function attemptLogin() {
+    const val = $('login-password').value;
+    if (val === getPassword()) {
+      $('screen-login').classList.remove('active');
+      $('screen-main').classList.add('active');
+      $('post-date').value = new Date().toISOString().split('T')[0];
+    } else {
+      $('login-error').textContent = 'Incorrect password.';
+      $('login-password').value = '';
+    }
+  }
+
+  function logout() {
+    $('screen-main').classList.remove('active');
+    $('login-password').value = '';
+    $('screen-login').classList.add('active');
+  }
+
+  // ── NAVIGATION ──
+  function showPage(page, link) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+    $(`page-${page}`).classList.add('active');
+    if (link) link.classList.add('active');
+    if (page === 'all-posts') renderPostsList();
+  }
+
+  // ── GENERATE POST ──
+  function generatePost() {
+    const title = $('post-title').value.trim();
+    const category = $('post-category').value;
+    const content = $('post-content').value.trim();
+    const date = $('post-date').value || new Date().toISOString().split('T')[0];
+    const publication = $('post-publication').value.trim();
+    const link = $('post-link').value.trim();
+    let excerpt = $('post-excerpt').value.trim();
+
+    if (!title) { showStatus('publish-status','error','Please enter a title.'); return; }
+    if (!content) { showStatus('publish-status','error','Please enter some content.'); return; }
+
+    if (!excerpt) {
+      if (category === 'poem') {
+        excerpt = content.split('\n').slice(0,4).join(' / ');
+      } else {
+        excerpt = content.replace(/\n/g,' ').slice(0,160) + (content.length > 160 ? '…' : '');
+      }
+    }
+
+    const newPost = {
+      id: Date.now().toString(),
+      title, category, content, excerpt,
+      publication: publication || null,
+      link: link || null,
+      date, featured: false
+    };
+
+    const posts = getPosts();
+    posts.unshift(newPost);
+    savePosts(posts);
+
+    const json = JSON.stringify(posts, null, 2);
+    $('json-output').value = json;
+
+    // copy to clipboard
+    navigator.clipboard.writeText(json).then(() => {
+      $('form-section').style.display = 'none';
+      $('paste-section').style.display = 'block';
+      showStatus('publish-status', 'success', '✦  Copied! Now follow the 3 steps below to publish.');
+    }).catch(() => {
+      $('form-section').style.display = 'none';
+      $('paste-section').style.display = 'block';
+      showStatus('publish-status', 'info', 'Please manually copy the text below, then follow the 3 steps.');
+    });
+  }
+
+  function copyAgain() {
+    const json = $('json-output').value;
+    navigator.clipboard.writeText(json).then(() => {
+      showStatus('publish-status','success','Copied again!');
+    });
+  }
+
+  function resetForm() {
+    $('post-title').value = '';
+    $('post-content').value = '';
+    $('post-excerpt').value = '';
+    $('post-publication').value = '';
+    $('post-link').value = '';
+    $('post-date').value = new Date().toISOString().split('T')[0];
+    $('json-output').value = '';
+    $('publish-status').classList.remove('show');
+    $('form-section').style.display = 'block';
+    $('paste-section').style.display = 'none';
+  }
+
+  // ── POSTS LIST ──
+  function renderPostsList() {
+    const posts = getPosts();
+    const list = $('posts-list');
+    if (posts.length === 0) {
+      list.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--sepia);font-style:italic;">No posts yet.</div>';
+      return;
+    }
+    list.innerHTML = posts.map(post => `
+      <div class="post-item">
+        <div class="post-item-info">
+          <div class="post-item-title">${post.title}</div>
+          <div class="post-item-meta">${post.date || ''} ${post.publication ? '· ' + post.publication : ''}</div>
+        </div>
+        <span class="post-item-tag tag-${post.category}">${post.category}</span>
+        <button class="btn btn-danger" onclick="deletePost('${post.id}')">Delete</button>
+      </div>`).join('');
+  }
+
+  function deletePost(id) {
+    if (!confirm('Remove this post?')) return;
+    const posts = getPosts().filter(p => p.id !== id);
+    savePosts(posts);
+
+    const json = JSON.stringify(posts, null, 2);
+    $('delete-json-output').value = json;
+
+    navigator.clipboard.writeText(json).catch(()=>{});
+    $('delete-paste').style.display = 'block';
+    showStatus('delete-status','success','Post removed. Paste the updated file into GitHub to go live.');
+    renderPostsList();
+  }
+
+  function copyDeleteJson() {
+    navigator.clipboard.writeText($('delete-json-output').value).then(()=>{
+      showStatus('delete-status','success','Copied!');
+    });
+  }
+
+  // ── PASSWORD ──
+  function changePassword() {
+    const np = $('new-password').value;
+    const cp = $('confirm-password').value;
+    if (!np) { showStatus('password-status','error','Enter a new password.'); return; }
+    if (np !== cp) { showStatus('password-status','error','Passwords do not match.'); return; }
+    localStorage.setItem('tww_password', np);
+    $('new-password').value = '';
+    $('confirm-password').value = '';
+    showStatus('password-status','success','Password updated.');
+  }
+</script>
+</body>
+</html>
