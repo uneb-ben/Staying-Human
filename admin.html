@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — The Written Word</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=EB+Garamond:ital,wght@0,400;1,400&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1208;
+    --ink-light: #3d2e1a;
+    --sepia: #7a5c38;
+    --gold: #b8860b;
+    --gold-light: #d4a843;
+    --cream: #f5ede0;
+    --parchment: #ede0cc;
+    --warm-white: #faf6f0;
+    --rule: #c9a96e;
+    --success: #2a6e3a;
+    --error: #8b2020;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--ink);
+    color: var(--cream);
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* SCREENS */
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ── LOGIN SCREEN ── */
+  #screen-login {
+    align-items: center; justify-content: center;
+    padding: 2rem;
+    background: var(--ink);
+    position: relative; overflow: hidden;
+  }
+
+  #screen-login::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 48px, rgba(180,140,70,0.03) 48px, rgba(180,140,70,0.03) 49px);
+    pointer-events: none;
+  }
+
+  .login-box {
+    width: 100%; max-width: 400px;
+    border: 1px solid rgba(184,134,11,0.3);
+    padding: 3rem;
+    position: relative;
+    background: rgba(26,18,8,0.8);
+  }
+
+  .login-box::before {
+    content: ''; position: absolute; inset: 6px;
+    border: 1px solid rgba(184,134,11,0.1);
+    pointer-events: none;
+  }
+
+  .login-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem; font-weight: 300; font-style: italic;
+    color: var(--gold-light); text-align: center;
+    margin-bottom: 0.4rem;
+  }
+
+  .login-sub {
+    font-family: 'Cinzel', serif; font-size: 0.55rem;
+    letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--sepia); text-align: center; margin-bottom: 2.5rem;
+  }
+
+  .form-group { margin-bottom: 1.4rem; }
+
+  label {
+    display: block;
+    font-family: 'Cinzel', serif; font-size: 0.55rem;
+    letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--sepia); margin-bottom: 0.5rem;
+  }
+
+  input[type="password"], input[type="text"], input[type="url"],
+  input[type="date"], select, textarea {
+    width: 100%; padding: 0.75rem 1rem;
+    background: rgba(245,237,224,0.05);
+    border: 1px solid rgba(201,169,110,0.3);
+    color: var(--cream);
+    font-family: 'EB Garamond', serif; font-size: 1rem;
+    outline: none; transition: border-color 0.2s;
+    appearance: none;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--gold);
+    background: rgba(245,237,224,0.07);
+  }
+
+  select option { background: var(--ink); color: var(--cream); }
+
+  textarea { resize: vertical; min-height: 200px; line-height: 1.8; }
+
+  .btn {
+    width: 100%; padding: 0.85rem;
+    font-family: 'Cinzel', serif; font-size: 0.65rem;
+    letter-spacing: 0.3em; text-transform: uppercase;
+    border: none; cursor: pointer; transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: var(--gold); color: var(--ink);
+  }
+  .btn-primary:hover { background: var(--gold-light); }
+  .btn-primary:disabled { opacity: 0.5; pointer-events: none; }
+
+  .btn-secondary {
+    background: transparent; color: var(--sepia);
+    border: 1px solid rgba(201,169,110,0.3);
+    margin-top: 0.75rem;
+  }
+  .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+
+  .btn-danger {
+    background: transparent; color: #c45a5a;
+    border: 1px solid rgba(196,90,90,0.3);
+    font-size: 0.5rem; padding: 0.4rem 0.8rem;
+    width: auto; letter-spacing: 0.2em;
+  }
+  .btn-danger:hover { background: rgba(196,90,90,0.1); border-color: #c45a5a; }
+
+  .login-error {
+    color: #e07070; font-family: 'Cinzel', serif;
+    font-size: 0.6rem; letter-spacing: 0.1em;
+    text-align: center; margin-top: 1rem;
+    min-height: 1.2em;
+  }
+
+  /* ── SETUP SCREEN ── */
+  #screen-setup {
+    align-items: center; justify-content: center; padding: 2rem;
+  }
+
+  .setup-box {
+    width: 100%; max-width: 520px;
+    border: 1px solid rgba(184,134,11,0.3);
+    padding: 3rem;
+  }
+
+  .setup-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem; font-weight: 300; font-style: italic;
+    color: var(--cream); margin-bottom: 0.5rem;
+  }
+
+  .setup-desc {
+    font-size: 0.95rem; color: rgba(245,237,224,0.5);
+    font-style: italic; margin-bottom: 2rem;
+    border-left: 2px solid rgba(184,134,11,0.3);
+    padding-left: 1rem;
+    line-height: 1.6;
+  }
+
+  .setup-steps {
+    background: rgba(245,237,224,0.04);
+    border: 1px solid rgba(201,169,110,0.15);
+    padding: 1.2rem 1.5rem; margin-bottom: 2rem;
+    font-size: 0.9rem; color: rgba(245,237,224,0.6);
+    line-height: 2;
+  }
+
+  .setup-steps strong { color: var(--gold-light); font-weight: normal; }
+  .setup-steps a { color: var(--gold); }
+
+  /* ── MAIN SCREEN ── */
+  #screen-main { flex-direction: row; align-items: stretch; }
+
+  .sidebar {
+    width: 260px; min-height: 100vh;
+    background: rgba(0,0,0,0.3);
+    border-right: 1px solid rgba(201,169,110,0.15);
+    display: flex; flex-direction: column;
+    padding: 2rem 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .sidebar-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem; font-weight: 300; font-style: italic;
+    color: var(--gold-light); margin-bottom: 0.3rem;
+  }
+
+  .sidebar-sub {
+    font-family: 'Cinzel', serif; font-size: 0.5rem;
+    letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--sepia); margin-bottom: 2.5rem;
+  }
+
+  .sidebar-nav { list-style: none; margin-bottom: auto; }
+
+  .sidebar-nav li { margin-bottom: 0.3rem; }
+
+  .sidebar-nav a {
+    display: block; padding: 0.5rem 0.75rem;
+    font-family: 'Cinzel', serif; font-size: 0.6rem;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--sepia); text-decoration: none;
+    transition: color 0.2s, background 0.2s;
+    border-left: 2px solid transparent;
+  }
+
+  .sidebar-nav a:hover, .sidebar-nav a.active {
+    color: var(--gold-light);
+    border-left-color: var(--gold);
+    background: rgba(184,134,11,0.05);
+  }
+
+  .sidebar-bottom { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(201,169,110,0.15); }
+
+  .sidebar-bottom a {
+    display: block; font-family: 'Cinzel', serif; font-size: 0.55rem;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--sepia);
+    text-decoration: none; padding: 0.4rem 0; opacity: 0.5; transition: opacity 0.2s;
+  }
+
+  .sidebar-bottom a:hover { opacity: 1; color: var(--gold); }
+
+  .main-content { flex: 1; padding: 3rem; overflow-y: auto; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem; font-weight: 300; font-style: italic;
+    color: var(--cream); margin-bottom: 0.4rem;
+  }
+
+  .page-desc { font-size: 0.95rem; color: rgba(245,237,224,0.4); font-style: italic; margin-bottom: 3rem; }
+
+  /* FORM */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  .form-full { grid-column: 1 / -1; }
+
+  .char-count { font-family: 'Cinzel', serif; font-size: 0.5rem; letter-spacing: 0.1em; color: var(--sepia); text-align: right; margin-top: 0.3rem; opacity: 0.5; }
+
+  .hint { font-size: 0.85rem; color: rgba(245,237,224,0.3); font-style: italic; margin-top: 0.4rem; }
+
+  /* STATUS BAR */
+  .status-bar {
+    padding: 1rem 1.5rem;
+    font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.2em;
+    margin-bottom: 2rem; display: none;
+  }
+  .status-bar.show { display: block; }
+  .status-bar.success { background: rgba(42,110,58,0.15); border-left: 3px solid #4a9e5a; color: #7ec98a; }
+  .status-bar.error   { background: rgba(139,32,32,0.15); border-left: 3px solid #c45a5a; color: #e08080; }
+  .status-bar.loading { background: rgba(184,134,11,0.1); border-left: 3px solid var(--gold); color: var(--gold-light); }
+
+  /* POSTS LIST */
+  .posts-list { display: flex; flex-direction: column; gap: 1px; background: rgba(201,169,110,0.15); }
+
+  .post-item {
+    background: var(--ink); padding: 1.2rem 1.5rem;
+    display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  }
+
+  .post-item-info { flex: 1; min-width: 0; }
+
+  .post-item-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem; color: var(--cream); margin-bottom: 0.2rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .post-item-meta { font-family: 'Cinzel', serif; font-size: 0.5rem; letter-spacing: 0.15em; color: var(--sepia); opacity: 0.6; }
+
+  .post-item-tag {
+    font-family: 'Cinzel', serif; font-size: 0.45rem; letter-spacing: 0.2em;
+    text-transform: uppercase; padding: 0.2rem 0.6rem;
+    border: 1px solid currentColor; white-space: nowrap;
+  }
+
+  .tag-poem        { color: #9e6e94; }
+  .tag-academic    { color: #4a8f8a; }
+  .tag-opinion     { color: #b05a5a; }
+  .tag-essay       { color: #5a7ab0; }
+  .tag-books       { color: #7a9e4a; }
+  .tag-unclassified{ color: #7a7a7a; }
+
+  /* SETTINGS */
+  .settings-section { margin-bottom: 3rem; }
+  .settings-title { font-family: 'Cinzel', serif; font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--sepia); margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(201,169,110,0.2); }
+
+  .token-display {
+    font-family: monospace; font-size: 0.85rem;
+    color: var(--sepia); letter-spacing: 0.05em;
+    padding: 0.5rem; background: rgba(245,237,224,0.03);
+    border: 1px solid rgba(201,169,110,0.15);
+    display: block; margin-bottom: 0.5rem;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  @media (max-width: 768px) {
+    #screen-main { flex-direction: column; }
+    .sidebar { width: 100%; min-height: auto; border-right: none; border-bottom: 1px solid rgba(201,169,110,0.15); }
+    .main-content { padding: 2rem 1.5rem; }
+    .form-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="screen-login" class="screen active">
+  <div class="login-box">
+    <div class="login-logo">The Written Word</div>
+    <div class="login-sub">Admin Panel</div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="Enter your password" onkeydown="if(event.key==='Enter') attemptLogin()">
+    </div>
+    <button class="btn btn-primary" onclick="attemptLogin()">Enter</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ── SETUP ── -->
+<div id="screen-setup" class="screen">
+  <div class="setup-box">
+    <h1 class="setup-title">Connect to GitHub</h1>
+    <p class="setup-desc">This is a one-time setup. You'll need a GitHub Personal Access Token so the admin panel can publish to your site automatically.</p>
+
+    <div class="setup-steps">
+      <strong>How to get your token:</strong><br>
+      1. Go to <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a><br>
+      2. Give it a name like "My Writing Site"<br>
+      3. Set expiration to "No expiration"<br>
+      4. Under <strong>Scopes</strong>, check <strong>repo</strong><br>
+      5. Click "Generate token" and copy it
+    </div>
+
+    <div class="form-group">
+      <label>GitHub Username</label>
+      <input type="text" id="setup-username" placeholder="e.g. uneb-ben">
+    </div>
+    <div class="form-group">
+      <label>Repository Name</label>
+      <input type="text" id="setup-repo" placeholder="e.g. my-writing">
+    </div>
+    <div class="form-group">
+      <label>Personal Access Token</label>
+      <input type="password" id="setup-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+      <p class="hint">Stored only in your browser. Never shared.</p>
+    </div>
+
+    <div id="setup-status" class="status-bar"></div>
+    <button class="btn btn-primary" id="setup-btn" onclick="saveSetup()">Save & Connect</button>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div id="screen-main" class="screen">
+  <aside class="sidebar">
+    <div class="sidebar-logo">The Written Word</div>
+    <div class="sidebar-sub">Admin</div>
+    <ul class="sidebar-nav">
+      <li><a href="#" class="active" onclick="showPage('new-post', this)">✦ &nbsp;New Post</a></li>
+      <li><a href="#" onclick="showPage('all-posts', this)">≡ &nbsp;All Posts</a></li>
+      <li><a href="#" onclick="showPage('settings', this)">⚙ &nbsp;Settings</a></li>
+    </ul>
+    <div class="sidebar-bottom">
+      <a href="index.html" target="_blank">↗ View Site</a>
+      <a href="#" onclick="logout()">→ Log Out</a>
+    </div>
+  </aside>
+
+  <div class="main-content">
+
+    <!-- NEW POST -->
+    <div class="page active" id="page-new-post">
+      <h1 class="page-title">New Post</h1>
+      <p class="page-desc">Write something. Hit Publish. It goes live in about a minute.</p>
+
+      <div id="publish-status" class="status-bar"></div>
+
+      <div class="form-grid">
+        <div class="form-full form-group">
+          <label>Title</label>
+          <input type="text" id="post-title" placeholder="The title of your piece">
+        </div>
+
+        <div class="form-group">
+          <label>Category</label>
+          <select id="post-category">
+            <option value="opinion">Opinion</option>
+            <option value="books">On Books</option>
+            <option value="academic">Occasional Academia</option>
+            <option value="essay">Essay</option>
+            <option value="poem" selected>Poems</option>
+            <option value="unclassified">Unclassified</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="post-date">
+        </div>
+
+        <div class="form-group">
+          <label>Publication / Note <span style="opacity:0.4">(optional)</span></label>
+          <input type="text" id="post-publication" placeholder="e.g. Meanjin, Fall 2025">
+        </div>
+
+        <div class="form-group">
+          <label>Link to Original <span style="opacity:0.4">(optional)</span></label>
+          <input type="url" id="post-link" placeholder="https://...">
+        </div>
+
+        <div class="form-full form-group">
+          <label>Content</label>
+          <textarea id="post-content" placeholder="Paste or write your full piece here..."></textarea>
+          <p class="hint">For poems, line breaks are preserved. For prose, just write normally.</p>
+        </div>
+
+        <div class="form-full form-group">
+          <label>Excerpt <span style="opacity:0.4">(shown in the grid — leave blank to auto-generate)</span></label>
+          <textarea id="post-excerpt" style="min-height:80px;" placeholder="A short teaser line or two..."></textarea>
+        </div>
+
+        <div class="form-full">
+          <button class="btn btn-primary" id="publish-btn" onclick="publishPost()">Publish</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALL POSTS -->
+    <div class="page" id="page-all-posts">
+      <h1 class="page-title">All Posts</h1>
+      <p class="page-desc">Everything you've published.</p>
+      <div id="delete-status" class="status-bar"></div>
+      <div class="posts-list" id="posts-list">
+        <div style="padding:2rem;text-align:center;color:var(--sepia);font-style:italic;">Loading...</div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <h1 class="page-title">Settings</h1>
+      <p class="page-desc">Your GitHub connection and admin password.</p>
+
+      <div class="settings-section">
+        <div class="settings-title">GitHub Connection</div>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="settings-username">
+        </div>
+        <div class="form-group">
+          <label>Repository</label>
+          <input type="text" id="settings-repo">
+        </div>
+        <div class="form-group">
+          <label>Personal Access Token</label>
+          <input type="password" id="settings-token" placeholder="Leave blank to keep current">
+          <p class="hint">Only fill this if you need to update your token.</p>
+        </div>
+        <button class="btn btn-primary" style="max-width:200px;" onclick="saveSettings()">Save Changes</button>
+        <div id="settings-status" class="status-bar" style="margin-top:1rem;margin-bottom:0;"></div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-title">Change Password</div>
+        <div class="form-group">
+          <label>New Password</label>
+          <input type="password" id="new-password" placeholder="Enter new password">
+        </div>
+        <div class="form-group">
+          <label>Confirm Password</label>
+          <input type="password" id="confirm-password" placeholder="Repeat new password">
+        </div>
+        <button class="btn btn-primary" style="max-width:200px;" onclick="changePassword()">Update Password</button>
+        <div id="password-status" class="status-bar" style="margin-top:1rem;margin-bottom:0;"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ── DEFAULT PASSWORD (change this after first login) ──
+  const DEFAULT_PASSWORD = 'writemore2025';
+
+  // ── HELPERS ──
+  const $ = id => document.getElementById(id);
+
+  function showStatus(id, type, msg) {
+    const el = $(id);
+    el.className = `status-bar ${type} show`;
+    el.textContent = msg;
+    if (type === 'success') setTimeout(() => el.classList.remove('show'), 4000);
+  }
+
+  function getConfig() {
+    return {
+      username: localStorage.getItem('tww_username') || '',
+      repo: localStorage.getItem('tww_repo') || '',
+      token: localStorage.getItem('tww_token') || '',
+      password: localStorage.getItem('tww_password') || DEFAULT_PASSWORD
+    };
+  }
+
+  // ── LOGIN ──
+  function attemptLogin() {
+    const input = $('login-password').value;
+    const cfg = getConfig();
+    if (input === cfg.password) {
+      $('login-error').textContent = '';
+      $('screen-login').classList.remove('active');
+      if (!cfg.token || !cfg.username || !cfg.repo) {
+        $('screen-setup').classList.add('active');
+      } else {
+        startMain();
+      }
+    } else {
+      $('login-error').textContent = 'Incorrect password.';
+      $('login-password').value = '';
+    }
+  }
+
+  function logout() {
+    $('screen-main').classList.remove('active');
+    $('login-password').value = '';
+    $('screen-login').classList.add('active');
+  }
+
+  // ── SETUP ──
+  async function saveSetup() {
+    const username = $('setup-username').value.trim();
+    const repo = $('setup-repo').value.trim();
+    const token = $('setup-token').value.trim();
+
+    if (!username || !repo || !token) {
+      showStatus('setup-status', 'error', 'All fields are required.');
+      return;
+    }
+
+    showStatus('setup-status', 'loading', 'Testing connection...');
+    $('setup-btn').disabled = true;
+
+    try {
+      const res = await fetch(`https://api.github.com/repos/${username}/${repo}`, {
+        headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+      });
+
+      if (!res.ok) throw new Error('Could not access repository. Check your username, repo name, and token.');
+
+      localStorage.setItem('tww_username', username);
+      localStorage.setItem('tww_repo', repo);
+      localStorage.setItem('tww_token', token);
+
+      showStatus('setup-status', 'success', 'Connected! Loading...');
+      setTimeout(() => {
+        $('screen-setup').classList.remove('active');
+        startMain();
+      }, 1000);
+
+    } catch (e) {
+      showStatus('setup-status', 'error', e.message);
+      $('setup-btn').disabled = false;
+    }
+  }
+
+  // ── GITHUB API ──
+  async function fetchPosts() {
+    const cfg = getConfig();
+    const res = await fetch(`https://api.github.com/repos/${cfg.username}/${cfg.repo}/contents/posts.json`, {
+      headers: { 'Authorization': `token ${cfg.token}`, 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (!res.ok) throw new Error('Could not fetch posts.json from GitHub.');
+    const data = await res.json();
+    const content = atob(data.content.replace(/\n/g, ''));
+    return { posts: JSON.parse(content), sha: data.sha };
+  }
+
+  async function savePosts(posts, sha, message) {
+    const cfg = getConfig();
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(posts, null, 2))));
+    const res = await fetch(`https://api.github.com/repos/${cfg.username}/${cfg.repo}/contents/posts.json`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${cfg.token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ message, content, sha })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || 'Failed to save.');
+    }
+    return await res.json();
+  }
+
+  // ── PUBLISH ──
+  async function publishPost() {
+    const title = $('post-title').value.trim();
+    const category = $('post-category').value;
+    const content = $('post-content').value.trim();
+    const date = $('post-date').value || new Date().toISOString().split('T')[0];
+    const publication = $('post-publication').value.trim();
+    const link = $('post-link').value.trim();
+    let excerpt = $('post-excerpt').value.trim();
+
+    if (!title || !content) {
+      showStatus('publish-status', 'error', 'Title and content are required.');
+      return;
+    }
+
+    // Auto-generate excerpt if blank
+    if (!excerpt) {
+      if (category === 'poem') {
+        excerpt = content.split('\n').slice(0,4).join(' / ');
+      } else {
+        excerpt = content.replace(/\n/g,' ').slice(0, 160) + (content.length > 160 ? '…' : '');
+      }
+    }
+
+    showStatus('publish-status', 'loading', '✦  Publishing...');
+    $('publish-btn').disabled = true;
+
+    try {
+      const { posts, sha } = await fetchPosts();
+
+      const newPost = {
+        id: Date.now().toString(),
+        title, category, content, excerpt,
+        publication: publication || null,
+        link: link || null,
+        date,
+        featured: false
+      };
+
+      posts.unshift(newPost); // newest first
+
+      await savePosts(posts, sha, `Add: ${title}`);
+
+      showStatus('publish-status', 'success', '✦  Published! Your site will update in about a minute.');
+
+      // Clear form
+      $('post-title').value = '';
+      $('post-content').value = '';
+      $('post-excerpt').value = '';
+      $('post-publication').value = '';
+      $('post-link').value = '';
+      $('post-date').value = '';
+
+    } catch (e) {
+      showStatus('publish-status', 'error', e.message);
+    }
+
+    $('publish-btn').disabled = false;
+  }
+
+  // ── ALL POSTS ──
+  async function loadPostsList() {
+    const list = $('posts-list');
+    list.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--sepia);font-style:italic;">Loading...</div>';
+
+    try {
+      const { posts } = await fetchPosts();
+
+      if (posts.length === 0) {
+        list.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--sepia);font-style:italic;">No posts yet.</div>';
+        return;
+      }
+
+      list.innerHTML = posts.map(post => `
+        <div class="post-item">
+          <div class="post-item-info">
+            <div class="post-item-title">${post.title}</div>
+            <div class="post-item-meta">${post.date || ''} ${post.publication ? '· ' + post.publication : ''}</div>
+          </div>
+          <span class="post-item-tag tag-${post.category}">${post.category}</span>
+          <button class="btn btn-danger" onclick="deletePost('${post.id}')">Delete</button>
+        </div>`).join('');
+
+    } catch(e) {
+      list.innerHTML = `<div style="padding:2rem;color:#e08080;font-family:'Cinzel',serif;font-size:0.6rem;">${e.message}</div>`;
+    }
+  }
+
+  async function deletePost(id) {
+    if (!confirm('Delete this post? This cannot be undone.')) return;
+
+    showStatus('delete-status', 'loading', 'Deleting...');
+
+    try {
+      const { posts, sha } = await fetchPosts();
+      const updated = posts.filter(p => p.id !== id);
+      await savePosts(updated, sha, 'Delete post');
+      showStatus('delete-status', 'success', 'Post deleted. Site will update in a minute.');
+      loadPostsList();
+    } catch(e) {
+      showStatus('delete-status', 'error', e.message);
+    }
+  }
+
+  // ── SETTINGS ──
+  function loadSettings() {
+    const cfg = getConfig();
+    $('settings-username').value = cfg.username;
+    $('settings-repo').value = cfg.repo;
+    $('settings-token').value = '';
+  }
+
+  function saveSettings() {
+    const username = $('settings-username').value.trim();
+    const repo = $('settings-repo').value.trim();
+    const token = $('settings-token').value.trim();
+
+    if (!username || !repo) {
+      showStatus('settings-status', 'error', 'Username and repo are required.');
+      return;
+    }
+
+    localStorage.setItem('tww_username', username);
+    localStorage.setItem('tww_repo', repo);
+    if (token) localStorage.setItem('tww_token', token);
+
+    showStatus('settings-status', 'success', 'Settings saved.');
+  }
+
+  function changePassword() {
+    const np = $('new-password').value;
+    const cp = $('confirm-password').value;
+    if (!np) { showStatus('password-status', 'error', 'Enter a new password.'); return; }
+    if (np !== cp) { showStatus('password-status', 'error', 'Passwords do not match.'); return; }
+    localStorage.setItem('tww_password', np);
+    $('new-password').value = '';
+    $('confirm-password').value = '';
+    showStatus('password-status', 'success', 'Password updated.');
+  }
+
+  // ── NAVIGATION ──
+  function showPage(page, link) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+    $(`page-${page}`).classList.add('active');
+    if (link) link.classList.add('active');
+    if (page === 'all-posts') loadPostsList();
+    if (page === 'settings') loadSettings();
+  }
+
+  // ── START MAIN ──
+  function startMain() {
+    // Set default date to today
+    $('post-date').value = new Date().toISOString().split('T')[0];
+    $('screen-main').classList.add('active');
+  }
+</script>
+</body>
+</html>
